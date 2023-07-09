@@ -100,6 +100,7 @@ func run(args []string) {
 		createInviteCmd,
 		adminCmd,
 		createFeedGeneratorCmd,
+		profileCmd,
 	}
 
 	app.RunAndExitOnError()
@@ -129,8 +130,7 @@ var newAccountCmd = &cli.Command{
 			Email:      email,
 			Handle:     handle,
 			InviteCode: invite,
-			Password:   password,
-		})
+			Password:   password})
 		if err != nil {
 			return err
 		}
@@ -1465,6 +1465,33 @@ var createFeedGeneratorCmd = &cli.Command{
 
 			fmt.Println(resp.Uri)
 		}
+
+		return nil
+	},
+}
+
+var profileCmd = &cli.Command{
+	Name:      "profile",
+	Flags:     []cli.Flag{},
+	ArgsUsage: `<user>`,
+	Action: func(cctx *cli.Context) error {
+		xrpcc, err := cliutil.GetXrpcClient(cctx, true)
+		if err != nil {
+			return err
+		}
+
+		user := cctx.Args().First()
+		if user == "" {
+			user = xrpcc.Auth.Did
+		}
+
+		ctx := context.TODO()
+		resp, err := appbsky.ActorGetProfile(ctx, xrpcc, user)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(resp.Did, resp.Handle)
 
 		return nil
 	},
